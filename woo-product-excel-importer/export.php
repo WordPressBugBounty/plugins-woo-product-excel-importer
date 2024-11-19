@@ -25,7 +25,7 @@ class WooexportProducts {
 			<i><?php esc_html_e( 'Important Note: always save the generated export file in xlsx format to a new excel for import use.', 'woo-product-excel-importer' ); ?></i>
 		</p>
 		<div>    
-			<?php print "<div class='result'>" . $this->exportProductsForm() . '</div>'; ?>
+			<div class='result'><?php  $this->exportProductsForm() ; ?></div>
 		</div>
 		<?php
 	}
@@ -45,7 +45,7 @@ class WooexportProducts {
 				</p>
 				
 				
-				<form name='exp_ProductsForm' id='exp_ProductsForm' method='post' action= "<?php echo admin_url( 'admin.php?page=woo-product-importer&tab=exportProducts' ); ?>" >	
+				<form name='exp_ProductsForm' id='exp_ProductsForm' method='post' action= "<?php echo esc_url( admin_url( 'admin.php?page=woo-product-importer&tab=exportProducts' ) ); ?>" >	
 					<table class='wp-list-table widefat fixed table table-bordered'>	
 						<tr>
 							<td class='premium'>
@@ -59,7 +59,7 @@ class WooexportProducts {
 								<?php esc_html_e( 'Keywords', 'woo-product-excel-importer' ); ?> 
 							</td>
 							<td>
-								<input type='text' name='keyword'  id='keyword' placeholder='<?php _e( 'Search term', 'woo-product-excel-importer' ); ?>'/>
+								<input type='text' name='keyword'  id='keyword' placeholder='<?php esc_html_e( 'Search term', 'woo-product-excel-importer' ); ?>'/>
 							</td>
 							<td></td><td></td>
 						</tr>
@@ -145,8 +145,8 @@ class WooexportProducts {
 							foreach ( $taxonomy_objects as $voc ) {
 
 								print "<td>
-								<input type='checkbox' class='fieldsToShow' " . $checked . " name='toShow" . esc_attr( $voc ) . "' value='1'/>
-								<label for='" . str_replace( '_', ' ', esc_attr( $voc ) ) . "'>" . str_replace( '_', ' ', esc_attr( $voc ) ) . '</label>
+								<input type='checkbox' class='fieldsToShow' " . esc_attr( $checked ) . " name='toShow" . esc_attr( $voc ) . "' value='1'/>
+								<label for='" . esc_attr( str_replace( '_', ' ',  $voc ) ) . "'>" . esc_attr( str_replace( '_', ' ',  $voc ) ) . '</label>
 								</td>';
 								array_push( $cols, esc_attr( $voc ) );
 							}
@@ -171,8 +171,8 @@ class WooexportProducts {
 						$checked = 'checked';
 						foreach ( $cols as $col ) {
 							print "<td>
-								<input type='checkbox' class='fieldsToShow' checked name='toShow" . $col . "' value='1'/>
-								<label for='" . $col . "'>" . $col . '</label>
+								<input type='checkbox' class='fieldsToShow' checked name='toShow" . esc_attr( $col ) . "' value='1'/>
+								<label for='" . esc_html( $col ) . "'>" . esc_html( $col ) . '</label>
 								</td>';
 						}
 						?>
@@ -200,13 +200,13 @@ class WooexportProducts {
 
 	public function exportProducts() {
 
-		if ( $_SERVER['REQUEST_METHOD'] === 'POST' && current_user_can( 'wpeieWoo' ) && $_REQUEST['columnsToShow'] ) {
+		if ( isset( $_SERVER['REQUEST_METHOD'] ) && $_SERVER['REQUEST_METHOD'] === 'POST' && current_user_can( 'wpeieWoo' ) && isset( $_REQUEST['columnsToShow'] ) ) {
 
 			check_admin_referer( 'columnsToShow' );
 			check_ajax_referer( 'columnsToShow' );
 
 			if ( ! empty( $_POST['keyword'] ) ) {
-				$this->keyword = sanitize_text_field( $_POST['keyword'] );
+				$this->keyword = sanitize_text_field( wp_unslash( $_POST['keyword'] ) );
 			}
 
 			if ( ! empty( $_POST['posts_per_page'] ) ) {
@@ -298,13 +298,13 @@ class WooexportProducts {
 
 function woopei_exportProducts() {
 
-	if ( $_SERVER['REQUEST_METHOD'] === 'POST' && current_user_can( 'wpeieWoo' ) ) {
+	if ( isset( $_SERVER['REQUEST_METHOD'] ) && $_SERVER['REQUEST_METHOD'] === 'POST' && current_user_can( 'wpeieWoo' ) ) {
 
 		check_admin_referer( 'columnsToShow' );
 		check_ajax_referer( 'columnsToShow' );
 		$keyword = '';
 		if ( ! empty( $_POST['keyword'] ) ) {
-			$keyword = sanitize_text_field( $_POST['keyword'] );
+			$keyword = sanitize_text_field(  wp_unslash( $_POST['keyword'] ) );
 		}
 
 		if ( ! empty( $_POST['posts_per_page'] ) ) {
@@ -342,17 +342,17 @@ function woopei_exportProducts() {
 					?>
 									<tr>
 						<td><?php print esc_attr( get_the_ID() ); ?></td>					
-						<?php if ( $_REQUEST['toShowtitle'] ) { ?>								 
+						<?php if ( isset( $_REQUEST['toShowtitle'] ) ) { ?>								 
 							<td><?php esc_attr( the_title() ); ?></td>
 						<?php } ?>					
 						<?php if ( isset( $_REQUEST['toShowdescription'] ) ) { ?>									
 							<td>
-								<?php print esc_attr( strip_tags( get_post_field( 'post_content', get_the_ID() ) ) ); ?>
+								<?php print esc_attr( wp_strip_all_tags( get_post_field( 'post_content', get_the_ID() ) ) ); ?>
 							</td>
 						<?php } ?>
 						<?php if ( isset( $_REQUEST['toShowexcerpt'] ) ) { ?>								 
 							<td>
-								<?php print esc_attr( strip_tags( get_post_field( 'post_excerpt', get_the_ID() ) ) ); ?>							
+								<?php print esc_attr( wp_strip_all_tags( get_post_field( 'post_excerpt', get_the_ID() ) ) ); ?>							
 							</td>
 						<?php } ?>												
 

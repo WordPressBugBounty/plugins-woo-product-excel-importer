@@ -1,20 +1,20 @@
 <?php
 /*
- * Plugin Name: WordPress Product Excel Import & Export for WooCommerce
+ * Plugin Name: Product Excel Import & Export for WooCommerce
  * Plugin URI: https://extend-wp.com/product-import-export-for-woocommerce-with-excel/
  * Description: WordPress Plugin to Import/Update/Export Simple products for WooCommerce in Bulk with Excel
- * Version: 5.9
+ * Version: 6.0
  * Author: extendWP
  * Text Domain: woo-product-excel-importer
  * Domain Path: /languages
  * Author URI: https://extend-wp.com
  *
  * WC requires at least: 2.2
- * WC tested up to: 9.3.1
+ * WC tested up to: 9.5
  *
  * License: GPL2
  * Created On: 10-05-2016
- * Updated On: 17-09-2024
+ * Updated On: 19-11-2024
  */
 if ( ! defined( 'ABSPATH' ) ) {
 	exit; // Exit if accessed directly
@@ -25,19 +25,14 @@ $role = get_role( 'administrator' );
 $role->add_cap( 'wpeieWoo' );
 
 function woopei_translate() {
-
+	/** this function declares the translations directory  */
 	load_plugin_textdomain( 'woo-product-excel-importer', false, dirname( plugin_basename( __FILE__ ) ) . '/languages/' );
 }
 add_action( 'plugins_loaded', 'woopei_translate' );
 
 function woopei_js() {
+	/** this function css and js files */
 
-	// $screen = get_current_screen();
-	// var_dump( $screen );
-	// if ( 'toplevel_page_woo-product-importer'  !== $screen->base )
-	// return;
-
-	// ENQUEUED CSS FILE INSTEAD OF INLINE CSS
 	wp_enqueue_style( 'woo-importer_css', plugins_url( '/css/woo-importer.css?v=34', __FILE__ ) );
 	wp_enqueue_style( 'woo-importer_css' );
 
@@ -79,6 +74,8 @@ add_action( 'admin_menu', 'woopei_menu' );
 add_action( 'admin_footer', 'woopeiPopup' );
 
 function woopei_menu() {
+	/** this function adds the menu pages */
+
 	add_submenu_page( 'edit.php?post_type=product', 'Product Import Export', 'Import from Excel', 'wpeieWoo', 'woo-product-importer', 'woopei_init' );
 	add_submenu_page( 'woocommerce', 'Product Import Export', 'Import from Excel', 'wpeieWoo', 'woo-product-importer', 'woopei_init' );
 	add_menu_page( 'Woo Product Importer Settings', 'Product Import Export', 'wpeieWoo', 'woo-product-importer', 'woopei_init', 'dashicons-upload', '50' );
@@ -89,6 +86,7 @@ function woopei_menu() {
 add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'add_woopei_links' );
 
 function add_woopei_links( $links ) {
+	/** this function has main links in plugins' page */
 	$links[] = "<a href='" . admin_url( 'admin.php?page=woo-product-importer' ) . "'>" . esc_html__( 'Settings', 'woo-product-excel-importer' ) . '</a>';
 	$links[] = "<a target='_blank' href='https://extend-wp.com/product/wordpress-product-import-export-excel-woocommerce/'>" . esc_html__( 'Go PRO', 'woo-product-excel-importer' ) . '</a>';
 	$links[] = "<a href='https://extend-wp.com' target='_blank'>" . esc_html__( 'More plugins!', 'woo-product-excel-importer' ) . '</a>';
@@ -97,9 +95,10 @@ function add_woopei_links( $links ) {
 
 
 function woopei_header() {
-	
+	/** this function is main plugin header */
+
 	?>
-		<img src='<?php echo plugins_url( 'images/woo_product_importer_banner.jpg', __FILE__ ); ?>'style='width:100%;'  />		
+		<img src='<?php echo esc_url( plugins_url( 'images/woo_product_importer_banner.jpg', __FILE__ ) ); ?>'style='width:100%;'  />		
 		
 	<?php
 }
@@ -107,24 +106,26 @@ function woopei_header() {
 
 
 function woopei_footer() {
+	/** this function is main plugin footer */
 	?>
 	<hr>
 
 	
 		<a target='_blank' class='web_logo' href='https://extend-wp.com/'>
-			<img  src='<?php echo plugins_url( 'images/extendwp.png', __FILE__ ); ?>' alt='Get more plugins by extendWP' title='Get more plugins by extendWP' />
+			<img  src='<?php echo esc_url( plugins_url( 'images/extendwp.png', __FILE__ ) ); ?>' alt='Get more plugins by extendWP' title='Get more plugins by extendWP' />
 		</a>	
 	<?php
 }
 
 function woopei_form() {
+	/** this function main import form */
 	?>
-			<form method="post" id='product_import' enctype="multipart/form-data" action= "<?php echo admin_url( 'admin.php?page=woo-product-importer' ); ?>">
+			<form method="post" id='product_import' enctype="multipart/form-data" action= "<?php echo esc_url( admin_url( 'admin.php?page=woo-product-importer' ) ); ?>">
 				
 				<table class="form-table">
 					<tr valign="top">
 					<th scope="row" style='width:100%;background:transparent'>
-						<div class="uploader" style="background:url(<?php print plugins_url( 'images/default.png', __FILE__ ); ?> ) no-repeat left center;" >
+						<div class="uploader" style="background:url(<?php print esc_url( plugins_url( 'images/default.png', __FILE__ ) ); ?> ) no-repeat left center;" >
 							<img src="" class='userSelected'/>
 							<input type="file"  required name="file" class='woopeiFile' accept=".csv, application/vnd.openxmlformats-officedocument.spreadsheetml.sheet, application/vnd.ms-excel" />
 						</div>
@@ -144,13 +145,13 @@ function woopei_form() {
 }
 
 function woopei_main() {
-
+	/** this function provides the html for the main interface */
 	?>
 
 		
 		<p>
 			<strong><?php esc_html_e( 'Import / Update simple WooCommerce products.', 'woo-product-excel-importer' ); ?> 
-			<a href='<?php echo plugins_url( '/sample_excel/import_products.xlsx', __FILE__ ); ?>'><?php esc_html_e( 'sample xlsx', 'woo-product-excel-importer' ); ?></a>
+			<a href='<?php echo esc_url( plugins_url( '/sample_excel/import_products.xlsx', __FILE__ ) ); ?>'><?php esc_html_e( 'sample xlsx', 'woo-product-excel-importer' ); ?></a>
 			</strong>
 		</p>			
 		<?php
@@ -162,8 +163,8 @@ function woopei_main() {
 
 // MAIN FORM FOR EXCEL UPLOAD
 function woopei_init() {
+	/** this function initializes the main interface */
 	?>
-	<!-- ADDITION DIV CLASSES AND STYLE MOVED TO CSS FILE-->
 	<div class="importer-wrap">
 
 	<?php
@@ -175,21 +176,21 @@ function woopei_init() {
 				'importCategories' => __( 'Import Categories', 'woo-product-excel-importer' ),
 			);
 
-			if ( isset( $_GET['tab'] ) && $_GET['tab'] ) {
-				$current = $_GET['tab'];
+			if ( isset( $_GET['tab'] ) ) {
+				$current = wp_unslash( $_GET['tab'] );
 			} else {
 				$current = 'main';
 			}
 			echo '<h2 class="nav-tab-wrapper" >';
 			foreach ( $tabs as $tab => $name ) {
 				$class = ( $tab === $current ) ? ' nav-tab-active' : '';
-				echo "<a class='nav-tab$class' href='?page=woo-product-importer&tab=$tab'>$name</a>";
+				echo "<a class='nav-tab". esc_attr( $class ) . "' href='?page=woo-product-importer&tab=". esc_attr( $tab ) . "'>". esc_attr( $name ) . "</a>";
 			}
 			?>
 			<a class='nav-tab premium' href='#'><?php esc_html_e( 'Delete Products', 'woo-product-excel-importer' ); ?></a>
 			<a class='nav-tab premium' href='#'><?php esc_html_e( 'Delete Categories', 'woo-product-excel-importer' ); ?></a>						
 			<a class='nav-tab premium pro' href='#'><?php esc_html_e( 'PRO version', 'woo-product-excel-importer' ); ?></a>
-			<a class='nav-tab instructions' href='<?php echo plugins_url( '/documentation/documentation.docx', __FILE__ ); ?>'><?php esc_html_e( 'Instructions', 'woo-product-excel-importer' ); ?></a>
+			<a class='nav-tab instructions' href='<?php echo esc_url( plugins_url( '/documentation/documentation.docx', __FILE__ ) ); ?>'><?php esc_html_e( 'Instructions', 'woo-product-excel-importer' ); ?></a>
 			<a target='_blank' class=' nav-tab wp_extensions '  style='text-align:center;margin:0 auto' href='https://extend-wp.com'>
 				<span class="dashicons dashicons-admin-plugins"></span> <?php esc_html_e( 'more extensions', 'woo-product-excel-importer' ); ?>
 			</a>
@@ -219,7 +220,7 @@ function woopei_init() {
 }
 
 function woopeiPopup() {
-
+	/** this function provides popup for pro version */
 	?>
 		<div id="woopeiPopup">
 			<!-- Modal content -->
@@ -228,7 +229,7 @@ function woopeiPopup() {
 			<div class='clearfix verticalAlign'>
 				<div class='columns2'>
 					<center>
-						<img style='width:90%' src='<?php echo plugins_url( 'images/woo_product_importer_premium.png', __FILE__ ); ?>' style='width:100%' />
+						<img style='width:90%' src='<?php echo esc_url( plugins_url( 'images/woo_product_importer_premium.png', __FILE__ ) ); ?>' style='width:100%' />
 					</center>
 				</div>
 				
@@ -255,8 +256,8 @@ function woopeiPopup() {
 }
 
 function woopei_Rating() {
-
-	if ( get_option( 'woopei_hide_rating' ) != 1 ) {
+	/** this function provides ability of rating */
+	if ( get_option( 'woopei_hide_rating' ) !== 1 ) {
 		?>
 	
 			<div class="notice notice-success rating ">
@@ -280,8 +281,8 @@ function woopei_Rating() {
 	add_action( 'wp_ajax_woopei_extensions', 'woopei_extensions' );
 
 function woopei_extensions() {
-
-	if ( is_admin() && current_user_can( 'wpeieWoo' ) && isset( $_REQUEST['action'] ) && $_REQUEST['action'] == 'woopei_extensions' ) {
+	/** this function provides a popup for extra plugins */
+	if ( is_admin() && current_user_can( 'wpeieWoo' ) && isset( $_REQUEST['action'] ) && $_REQUEST['action'] === 'woopei_extensions' ) {
 
 		$response = wp_remote_get( 'https://extend-wp.com/wp-json/products/v2/product/category/woocommerce' );
 
@@ -451,7 +452,7 @@ function woopei_deact_hook() {
 add_action( 'admin_notices', 'woopei_notification' );
 
 function woopei_notification() {
-
+	/** this function provides ability to subscribe */
 	$screen = get_current_screen();
 	if ( 'toplevel_page_woo-product-importer' !== $screen->base ) {
 		return;
@@ -463,12 +464,12 @@ function woopei_notification() {
 		<div class="updated notice  woopei_notification">
 			<a href="#" class='dismiss' style='float:right;padding:4px' >close</a>
 
-			<h4><i>Product Import Export | <?php esc_html_e( 'Add your Email below & get ', 'imue' ); ?><strong>discounts</strong><?php esc_html_e( ' in our pro plugins at', 'woo-product-excel-importer' ); ?> <a href='https://extend-wp.com' target='_blank' >extend-wp.com!</a></i></h4>
+			<h4><i>Product Import Export | <?php esc_html_e( 'Add your Email below & get ', 'woo-product-excel-importer' ); ?><strong>discounts</strong><?php esc_html_e( ' in our pro plugins at', 'woo-product-excel-importer' ); ?> <a href='https://extend-wp.com' target='_blank' >extend-wp.com!</a></i></h4>
 			<form method='post' id='woopei_signup'>
 				<p>
 				<input required type='email' name='woopei_email' />
 				<input required type='hidden' name='product' value='218' />
-				<input type='submit' class='button button-primary' name='submit' value='<?php esc_html_e( 'Sign up', 'woo-product-excel-importers' ); ?>' />
+				<input type='submit' class='button button-primary' name='submit' value='<?php esc_html_e( 'Sign up', 'woo-product-excel-importer' ); ?>' />
 				</p>
 			</form>
 		</div>
